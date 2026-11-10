@@ -93,6 +93,7 @@ static void MX_TIM4_Init(void);
 static void MX_I2C1_Init(void);
 /* USER CODE BEGIN PFP */
 void Init_Time(zeit_t *t, uint8_t h, uint8_t m);
+static void HandleWaitingState(void);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -158,23 +159,7 @@ int main(void)
 	  switch (state)
 	  {
 	  case WAITING:
-		  switch (mode)
-		  {
-		  case RUN:
-			  if(running_light(24, &set))
-			  {
-				  set=1;
-				  mode=BUILD;
-			  }
-			  break;
-		  case BUILD:
-			  if(running_light_build(4, &set))
-			  {
-				  set=1;
-				  mode=RUN;
-			  }
-			  break;
-		  }
+		  HandleWaitingState();
 		  break;
 	  case COUNTDOWN:
 		  heart_pulse();
@@ -498,6 +483,27 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+static void HandleWaitingState(void)
+{
+	switch (mode)
+	{
+	case RUN:
+		if(running_light(24, &set))
+		{
+			set=1;
+			mode=BUILD;
+		}
+		break;
+	case BUILD:
+		if(running_light_build(4, &set))
+		{
+			set=1;
+			mode=RUN;
+		}
+		break;
+	}
+}
+
 void Init_Time(zeit_t *t, uint8_t h, uint8_t m)
 {
 	t->ms=0;
