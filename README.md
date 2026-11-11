@@ -2,15 +2,7 @@
 
 A handmade birthday card built around an STM32 microcontroller. It combines an OLED display, LED animations, and music in an interactive sequence.
 
-<img src="media/videos/waiting_animation.gif" width="220" alt="Preview of the birthday card's OLED animation">
-
-## Gallery
-
-| Countdown | Birthday message | Birthday song |
-|---|---|---|
-| <img src="media/photos/birthday_countdown.jpg" width="300" alt="The card during the countdown, showing the number 6 on the OLED display"> | <img src="media/photos/bithday_message.jpg" width="300" alt="The finished card displaying the birthday message on the OLED"> | <img src="media/photos/birthday_song.jpeg" width="300" alt="The birthday card playing its song"> |
-
-Watch the birthday sequence in the [MP4 video](media/videos/birthday_song.mp4).
+<img src="media/videos/waiting_animation.gif" width="350" alt="Preview of the birthday card's OLED animation">
 
 ## Features
 
@@ -39,6 +31,14 @@ The application is organized as a state machine. Timers and PWM control time-bas
 ## Build and flash
 
 The repository includes the STM32CubeIDE/CubeMX project (`.ioc`) and Debug and Release build configurations. Open the project in STM32CubeIDE, build it, and flash the firmware to the microcontroller using a supported debugger/programmer.
+
+## Gallery
+
+| Birthday song | Birthday message | Birthday countdown |
+|---|---|---|
+|<img src="media/photos/birthday_song.jpeg" width="300" alt="The birthday card playing its song"> | <img src="media/photos/birthday_message.jpg" width="300" alt="The finished card displaying the birthday message on the OLED"> | <img src="media/photos/birthday_countdown.jpeg" width="300" alt="The birthday card plays a countdown from 10"> | 
+
+Watch the birthday sequence in the [MP4 video](media/videos/birthday_song.mp4).
 
 ## Credits and third-party libraries
 
