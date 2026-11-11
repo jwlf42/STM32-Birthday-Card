@@ -2,15 +2,15 @@
 
 A handmade birthday card built around an STM32 microcontroller. It combines an OLED display, LED animations, and music in an interactive sequence.
 
+<img src="media/videos/waiting_animation.gif" width="300" alt="Preview of the birthday card's OLED animation">
+
 ## Gallery
 
-**Photo of the finished card**
+| Countdown | Birthday message | Birthday song |
+|---|---|---|
+| <img src="media/photos/birthday_countdown.jpg" width="220" alt="The card during the countdown, showing the number 6 on the OLED display"> | <img src="media/photos/bithday_message.jpg" width="220" alt="The finished card displaying the birthday message on the OLED"> | <img src="media/photos/birthday_song.jpeg" width="220" alt="The birthday card playing its song"> |
 
-*Placeholder: Add a photo here, for example at `docs/images/birthday-card.jpg`.*
-
-**Demo video**
-
-*Placeholder: Link or embed a short clip showing the OLED, LEDs, and buzzer in action.*
+Watch the birthday sequence in the [MP4 video](media/videos/birthday_song.mp4).
 
 ## Features
 
