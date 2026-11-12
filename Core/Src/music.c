@@ -100,9 +100,14 @@ uint8_t play_happy_birthday(uint8_t reps, uint8_t *reset)
 
     if(HAL_GetTick()>=note_timer)
     {
+        if(j>=BIRTHDAY_SONG_SIZE)
+    	{
+    		j=0;
+    		count++;
+    	}
+        
     	if(reps<=count)
     	{
-    		buzzer_set_frequency(0);
     		return 1;
     	}
 
@@ -111,12 +116,6 @@ uint8_t play_happy_birthday(uint8_t reps, uint8_t *reset)
     	note_timer=HAL_GetTick()+happyBirthday[j].duration+PAUSE;
 
     	j++;
-
-    	if(j>=BIRTHDAY_SONG_SIZE)
-    	{
-    		j=0;
-    		count++;
-    	}
     }
 
     if(HAL_GetTick()>=note_timer-PAUSE)

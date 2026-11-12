@@ -142,7 +142,6 @@ int main(void)
 
   HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_1);
   HAL_TIM_Base_Start_IT(&htim2);
-// Hurens
   buzzer_set_frequency(2000);
   __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_1, 0);
   SSD1306_Init();
@@ -156,6 +155,16 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+    if(button_pressed)
+    {
+      button_pressed=0;
+      if(state == WAITING)
+		  {
+			  state=COUNTDOWN;
+			  set=1;
+		  }
+	  }
+    
 	  switch (state)
 	  {
 	  case WAITING:
@@ -180,7 +189,7 @@ int main(void)
 		  }
 		  break;
 	  case SONG:
-		  if(play_happy_birthday(1, &set))
+		  if(play_happy_birthday(2, &set))
 		  {
 			  state=PICTURE;
 			  set=1;
@@ -488,7 +497,7 @@ static void HandleWaitingState(void)
 	switch (mode)
 	{
 	case RUN:
-		if(running_light(24, &set))
+		if(running_light(20, &set))
 		{
 			set=1;
 			mode=BUILD;
@@ -547,8 +556,14 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
     if(GPIO_Pin == GPIO_PIN_1)
     {
-    	state=COUNTDOWN;
-    	set=1;
+        static uint32_t last_button_tick = 0;
+        uint32_t now = HAL_GetTick();
+
+        if((now - last_button_tick) >= 50)
+        {
+            last_button_tick = now;
+            button_pressed = 1;
+        }
     }
 }
 /* USER CODE END 4 */
