@@ -35,7 +35,7 @@ typedef struct{
 	uint32_t delay;
 }oled_screen_t;
 
-void ShowTime(zeit_t time);
+void ShowTime(RTC_TimeTypeDef sTime);
 uint8_t ShowText(oled_screen_t *liste, uint8_t list_size, uint8_t *reset);
 uint8_t countdown(uint8_t number, uint8_t *reset);
 uint8_t show_image(uint8_t reps, uint8_t *reset);

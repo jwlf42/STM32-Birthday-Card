@@ -223,7 +223,7 @@ uint8_t countdown(uint8_t number, uint8_t *reset)
 
         SSD1306_UpdateScreen();
 
-        buzzer_set_frequency(0);
+        buzzer_set_frequency(2000);
 
         n--;
     }
@@ -272,52 +272,6 @@ uint8_t ShowText(oled_screen_t *liste, uint8_t list_size, uint8_t *reset)
 	}
 
 	return 0;
-
-	/*
-	SSD1306_Clear();
-
-	SSD1306_GotoXY(23, 7);
-	SSD1306_Puts("Liebe", &Font_16x26, SSD1306_COLOR_WHITE);
-	SSD1306_UpdateScreen();
-	HAL_Delay(1500);
-	SSD1306_GotoXY(31, 37);
-	SSD1306_Puts("Zita", &Font_16x26, SSD1306_COLOR_WHITE);
-	  SSD1306_UpdateScreen();
-	  HAL_Delay(5500);
-
-	  SSD1306_Clear();
-
-	  SSD1306_GotoXY(38, 0);
-	  SSD1306_Puts("alles", &Font_11x18, SSD1306_COLOR_WHITE);
-	  SSD1306_GotoXY( 20, 21);
-	  SSD1306_Puts("Gute zum", &Font_11x18, SSD1306_COLOR_WHITE);
-	  SSD1306_GotoXY(10, 44);
-	  SSD1306_Puts("Geburtstag", &Font_11x18, SSD1306_COLOR_WHITE);
-	  SSD1306_UpdateScreen();
-	  HAL_Delay(5500);
-
-	  SSD1306_Clear();
-
-	  SSD1306_GotoXY(15, 15);
-	  SSD1306_Puts("ich liebe ", &Font_11x18, SSD1306_COLOR_WHITE);
-	  SSD1306_GotoXY(40, 35);
-	  SSD1306_Puts("Dich", &Font_11x18, SSD1306_COLOR_WHITE);
-	  SSD1306_UpdateScreen();
-	  HAL_Delay(5500);
-
-	  SSD1306_Clear();
-
-	  SSD1306_GotoXY(30, 7);
-	  SSD1306_Puts("Dein ", &Font_16x26, SSD1306_COLOR_WHITE);
-	  SSD1306_UpdateScreen();
-	  HAL_Delay(400);
-	  SSD1306_GotoXY(5, 37);
-	  SSD1306_Puts("Joel <3", &Font_16x26, SSD1306_COLOR_WHITE);
-	  SSD1306_UpdateScreen();
-	  HAL_Delay(5500);
-
-	  SSD1306_Clear();
-	  */
 }
 
 
@@ -326,7 +280,7 @@ uint8_t ShowText(oled_screen_t *liste, uint8_t list_size, uint8_t *reset)
  * schaltet led nach bitmuster an
 
 *******************************************************/
-void ShowTime(zeit_t time)
+void ShowTime(RTC_TimeTypeDef sTime)
 {
 	static uint32_t timer=0;
 	char timeString[9];
@@ -334,7 +288,7 @@ void ShowTime(zeit_t time)
 	if(HAL_GetTick()>=timer)
 	{
 		timer=HAL_GetTick()+1000;
-		sprintf(timeString, "%02d:%02d:%02d", time.h, time.m, time.s);
+		sprintf(timeString, "%02d:%02d:%02d", sTime.Hours, sTime.Minutes, sTime.Seconds);
 		SSD1306_GotoXY(20, 20);
 		SSD1306_Clear();
 		SSD1306_Puts(timeString, &Font_11x18, SSD1306_COLOR_WHITE);

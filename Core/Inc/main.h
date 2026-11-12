@@ -59,6 +59,21 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
+#define Board_LED_Green_Pin GPIO_PIN_13
+#define Board_LED_Green_GPIO_Port GPIOC
+#define Button_Pin GPIO_PIN_1
+#define Button_GPIO_Port GPIOA
+#define Button_EXTI_IRQn EXTI1_IRQn
+#define HEART_LED_CH1_Pin GPIO_PIN_6
+#define HEART_LED_CH1_GPIO_Port GPIOA
+#define HEART_LED_CH2_Pin GPIO_PIN_7
+#define HEART_LED_CH2_GPIO_Port GPIOA
+#define HEART_LED_CH3_Pin GPIO_PIN_0
+#define HEART_LED_CH3_GPIO_Port GPIOB
+#define HEART_LED_CH4_Pin GPIO_PIN_1
+#define HEART_LED_CH4_GPIO_Port GPIOB
+#define BUZZER_PWM_CH1_Pin GPIO_PIN_6
+#define BUZZER_PWM_CH1_GPIO_Port GPIOB
 
 /* USER CODE BEGIN Private defines */
 

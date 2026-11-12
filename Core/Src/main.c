@@ -21,7 +21,6 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include <stdio.h>
 #include "led.h"
 #include "music.h"
 #include "oled.h"
@@ -70,6 +69,8 @@ typedef enum
 /* Private variables ---------------------------------------------------------*/
 I2C_HandleTypeDef hi2c1;
 
+RTC_HandleTypeDef hrtc;
+
 TIM_HandleTypeDef htim2;
 TIM_HandleTypeDef htim3;
 TIM_HandleTypeDef htim4;
@@ -78,7 +79,8 @@ TIM_HandleTypeDef htim4;
 uint8_t set=0;
 state_t state=WAITING;
 light_mode_t mode=RUN;
-zeit_t time;
+volatile zeit_t time;
+static volatile uint8_t button_pressed=0;
 
 // 'SSD_1306', 128x64px
 
@@ -91,6 +93,7 @@ static void MX_TIM3_Init(void);
 static void MX_TIM2_Init(void);
 static void MX_TIM4_Init(void);
 static void MX_I2C1_Init(void);
+static void MX_RTC_Init(void);
 /* USER CODE BEGIN PFP */
 void Init_Time(zeit_t *t, uint8_t h, uint8_t m);
 static void HandleWaitingState(void);
@@ -109,6 +112,9 @@ int main(void)
 {
 
   /* USER CODE BEGIN 1 */
+  
+  RTC_TimeTypeDef sTime;
+  RTC_DateTypeDef sDate;
 
   /* USER CODE END 1 */
 
@@ -134,6 +140,7 @@ int main(void)
   MX_TIM2_Init();
   MX_TIM4_Init();
   MX_I2C1_Init();
+  MX_RTC_Init();
   /* USER CODE BEGIN 2 */
   HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1);
   HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_2);
@@ -165,36 +172,36 @@ int main(void)
 		  }
 	  }
     
-	  switch (state)
-	  {
-	  case WAITING:
-		  HandleWaitingState();
-		  break;
-	  case COUNTDOWN:
-		  heart_pulse();
-
-		  if(countdown(10, &set))
-		  {
-			  buzzer_set_frequency(0);
-			  HAL_Delay(1500);
-			  buzzer_set_frequency(0);
-			  state=TEXT;
-			  set=1;
-		  }
-		  break;
-	  case TEXT:
-		  if(ShowText(birthday_screens, 4, &set))
-		  {
-			  state=SONG;
-		  }
-		  break;
+    switch (state)
+    {
+      case WAITING:
+        HandleWaitingState();
+        break;
+      case COUNTDOWN:
+        heart_pulse();
+        if(countdown(10, &set))
+        {
+          buzzer_set_frequency(2000);
+          HAL_Delay(1500);
+          buzzer_set_frequency(0);
+          state=TEXT;
+          set=1;
+        }
+        break;
+      case TEXT:
+        if(ShowText(birthday_screens, 4, &set))
+        {
+          state=SONG;
+          set=1;
+        }
+		    break;
 	  case SONG:
 		  if(play_happy_birthday(2, &set))
 		  {
 			  state=PICTURE;
 			  set=1;
 		  }
-		  show_image(2, &set);
+      show_image(2, &set);
 		  break;
 	  case PICTURE:
 		  if(show_image(3, &set))
@@ -202,15 +209,16 @@ int main(void)
 			  set=1;
 			  state=TIME;
 		  }
-
 		  heart_pulse();
 		  break;
 	  case TIME:
-		  ShowTime(time);
-		  led_off();
-		  break;
+      HAL_RTC_GetTime(&hrtc, &sTime, RTC_FORMAT_BIN);
+      HAL_RTC_GetDate(&hrtc, &sDate, RTC_FORMAT_BIN);
+      ShowTime(sTime);
+      led_off();
+      break;
 	  default:
-		  state=WAITING;
+      state=WAITING;
 	  }
     /* USER CODE END WHILE */
 
@@ -227,13 +235,15 @@ void SystemClock_Config(void)
 {
   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
+  RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
 
   /** Initializes the RCC Oscillators according to the specified parameters
   * in the RCC_OscInitTypeDef structure.
   */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE|RCC_OSCILLATORTYPE_LSE;
   RCC_OscInitStruct.HSEState = RCC_HSE_ON;
   RCC_OscInitStruct.HSEPredivValue = RCC_HSE_PREDIV_DIV1;
+  RCC_OscInitStruct.LSEState = RCC_LSE_ON;
   RCC_OscInitStruct.HSIState = RCC_HSI_ON;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
@@ -253,6 +263,12 @@ void SystemClock_Config(void)
   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
 
   if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_2) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_RTC;
+  PeriphClkInit.RTCClockSelection = RCC_RTCCLKSOURCE_LSE;
+  if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
   {
     Error_Handler();
   }
@@ -293,6 +309,64 @@ static void MX_I2C1_Init(void)
 }
 
 /**
+  * @brief RTC Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_RTC_Init(void)
+{
+
+  /* USER CODE BEGIN RTC_Init 0 */
+
+  /* USER CODE END RTC_Init 0 */
+
+  RTC_TimeTypeDef sTime = {0};
+  RTC_DateTypeDef DateToUpdate = {0};
+
+  /* USER CODE BEGIN RTC_Init 1 */
+
+  /* USER CODE END RTC_Init 1 */
+
+  /** Initialize RTC Only
+  */
+  hrtc.Instance = RTC;
+  hrtc.Init.AsynchPrediv = RTC_AUTO_1_SECOND;
+  hrtc.Init.OutPut = RTC_OUTPUTSOURCE_NONE;
+  if (HAL_RTC_Init(&hrtc) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  /* USER CODE BEGIN Check_RTC_BKUP */
+
+  /* USER CODE END Check_RTC_BKUP */
+
+  /** Initialize RTC and set the Time and Date
+  */
+  sTime.Hours = 0x0;
+  sTime.Minutes = 0x0;
+  sTime.Seconds = 0x0;
+
+  if (HAL_RTC_SetTime(&hrtc, &sTime, RTC_FORMAT_BCD) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  DateToUpdate.WeekDay = RTC_WEEKDAY_WEDNESDAY;
+  DateToUpdate.Month = RTC_MONTH_AUGUST;
+  DateToUpdate.Date = 0x12;
+  DateToUpdate.Year = 0x26;
+
+  if (HAL_RTC_SetDate(&hrtc, &DateToUpdate, RTC_FORMAT_BCD) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN RTC_Init 2 */
+
+  /* USER CODE END RTC_Init 2 */
+
+}
+
+/**
   * @brief TIM2 Initialization Function
   * @param None
   * @retval None
@@ -311,7 +385,7 @@ static void MX_TIM2_Init(void)
 
   /* USER CODE END TIM2_Init 1 */
   htim2.Instance = TIM2;
-  htim2.Init.Prescaler = 7100;
+  htim2.Init.Prescaler = 7199;
   htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
   htim2.Init.Period = 99;
   htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
@@ -467,20 +541,20 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(Board_LED_Green_GPIO_Port, Board_LED_Green_Pin, GPIO_PIN_RESET);
 
-  /*Configure GPIO pin : PC13 */
-  GPIO_InitStruct.Pin = GPIO_PIN_13;
+  /*Configure GPIO pin : Board_LED_Green_Pin */
+  GPIO_InitStruct.Pin = Board_LED_Green_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+  HAL_GPIO_Init(Board_LED_Green_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : PA1 */
-  GPIO_InitStruct.Pin = GPIO_PIN_1;
+  /*Configure GPIO pin : Button_Pin */
+  GPIO_InitStruct.Pin = Button_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
   GPIO_InitStruct.Pull = GPIO_PULLUP;
-  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+  HAL_GPIO_Init(Button_GPIO_Port, &GPIO_InitStruct);
 
   /* EXTI interrupt init*/
   HAL_NVIC_SetPriority(EXTI1_IRQn, 0, 0);
@@ -527,25 +601,25 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 	{
 		time.ms=time.ms+10;
 
-		if(time.ms>999)
+		if(time.ms>=1000)
 		{
 			time.s++;
 			time.ms=0;
 		}
 
-		if(time.s>59)
+		if(time.s>=60)
 		{
 			time.m++;
 			time.s=0;
 	    }
 
-		if(time.m>59)
+		if(time.m>=60)
 		{
 			time.h++;
 	        time.m=0;
 	    }
 
-		if(time.h>23)
+		if(time.h>=24)
 		{
 			time.h=0;
 		}
