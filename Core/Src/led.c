@@ -112,7 +112,7 @@ uint8_t running_light(uint8_t reps, uint8_t*reset)
 
     if(HAL_GetTick() >= light_timer)
     {
-        light_timer = HAL_GetTick() + 50;
+        light_timer = HAL_GetTick() + 80;
 
         // alle Gruppen aus
         __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_1, 0);
